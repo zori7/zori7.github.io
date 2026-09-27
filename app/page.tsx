@@ -22,6 +22,8 @@ import {
   Layers,
   Zap,
   ArrowRight,
+  Menu,
+  X,
 } from "lucide-react";
 
 /* ─── Animations helpers ─── */
@@ -259,11 +261,21 @@ const categories: Category[] = [
 /* ─── Main page ─── */
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    const onResize = () => {
+      if (window.matchMedia("(min-width: 768px)").matches) setMenuOpen(false);
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   /* Ref-based in-view check for hero section */
@@ -283,13 +295,15 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-6">
           <div
-            className={`rounded-2xl flex items-center justify-between px-6 py-3 transition-all duration-300 ${scrolled ? "glass-card glow-primary" : ""}`}
+            className={`rounded-2xl flex items-center justify-between pr-4 pl-6 py-3 transition-all duration-300 ${scrolled ? "glass-card glow-primary" : ""}`}
             style={{ border: scrolled ? "1px solid rgba(59,130,246,0.15)" : "none", background: scrolled ? "rgba(3,7,18,0.7)" : "transparent" }}
           >
-            <a href="#hero" className="text-xl font-bold tracking-tight">
+            <a href="#hero" className="text-xl font-bold tracking-tight shrink-0">
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">&lt;Zori/&gt;</span>
             </a>
-            <div className="flex items-center gap-6">
+
+            {/* Desktop nav links */}
+            <div className="hidden md:flex items-center gap-6">
               <a href="#skills" className="text-sm text-white/50 hover:text-white transition-colors">Skills</a>
               <a href="#portfolio" className="text-sm text-white/50 hover:text-white transition-colors">Portfolio</a>
               <a href="#contact" className="text-sm text-white/50 hover:text-white transition-colors">Contact</a>
@@ -303,7 +317,60 @@ export default function Home() {
                 </motion.button>
               </a>
             </div>
+
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden p-1 rounded-lg text-white/70 hover:text-white transition-colors touch-manipulation"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Toggle navigation menu"
+            >
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
+
+          {/* Mobile dropdown */}
+          <AnimatePresence>
+            {menuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="md:hidden mt-2 glass-card rounded-2xl px-6 py-4 flex flex-col gap-3"
+                style={{ border: "1px solid rgba(59,130,246,0.15)", background: "rgba(3,7,18,0.85)" }}
+              >
+                <a
+                  href="#skills"
+                  className="text-sm text-white/70 hover:text-white transition-colors py-1"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Skills
+                </a>
+                <a
+                  href="#portfolio"
+                  className="text-sm text-white/70 hover:text-white transition-colors py-1"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Portfolio
+                </a>
+                <a
+                  href="#contact"
+                  className="text-sm text-white/70 hover:text-white transition-colors py-1"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Contact
+                </a>
+                <a href="#contact" onClick={() => setMenuOpen(false)}>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full mt-1 px-5 py-2.5 text-sm font-medium rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center"
+                  >
+                    Hire Me
+                  </motion.button>
+                </a>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.nav>
 
